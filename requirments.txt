@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+chromadb
+langchain-core
+langchain-openai
+langgraph
+openai
+python-dotenv
+loguru
+pipecat-ai

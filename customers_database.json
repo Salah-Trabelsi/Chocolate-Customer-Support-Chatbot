@@ -1,0 +1,101 @@
+[
+  {
+    "name": "John Doe",
+    "postcode": "SW1A 1AA",
+    "dob": "1990-01-01",
+    "customer_id": "CUST001",
+    "first_line_address": "123 Main St",
+    "phone_number": "07712345678",
+    "email": "john.doe@example.com"
+  },
+  {
+    "name": "Jane Smith",
+    "postcode": "E1 6AN",
+    "dob": "1985-05-15",
+    "customer_id": "CUST002",
+    "first_line_address": "456 High St",
+    "phone_number": "07723456789",
+    "email": "jane.smith@example.com"
+  },
+  {
+    "name": "Oliver Brown",
+    "dob": "1992-03-22",
+    "postcode": "M1 1AE",
+    "first_line_address": "78 Market Road",
+    "phone_number": "07700111222",
+    "email": "oliver.brown@example.com",
+    "customer_id": "CUST003"
+  },
+  {
+    "name": "Will White",
+    "dob": "2001-01-01",
+    "postcode": "ER45 5RD",
+    "first_line_address": "Black Forst Street 12",
+    "phone_number": "03940203940",
+    "email": "white@email.com",
+    "customer_id": "CUST004"
+  },
+  {
+    "name": "Maya Brooks",
+    "dob": "1998-07-14",
+    "postcode": "AB12 3CD",
+    "first_line_address": "27 Maple Crescent",
+    "phone_number": "07123456789",
+    "email": "maya.brooks@example.com",
+    "customer_id": "CUST005"
+  },
+  {
+    "name": "Ethan Carter",
+    "dob": "1995-03-22",
+    "postcode": "ZX98 7YT",
+    "first_line_address": "84 Willow Lane",
+    "phone_number": "07234567890",
+    "email": "ethan.carter@example.com",
+    "customer_id": "CUST006"
+  },
+  {
+    "name": "Sophie Turner",
+    "dob": "1992-11-08",
+    "postcode": "LM45 6NP",
+    "first_line_address": "16 Oakfield Road",
+    "phone_number": "07345678901",
+    "email": "sophie.turner@example.com",
+    "customer_id": "CUST007"
+  },
+  {
+    "name": "Oliver Reed",
+    "dob": "1999-05-17",
+    "postcode": "QW23 8LK",
+    "first_line_address": "42 Birchwood Avenue",
+    "phone_number": "07456789012",
+    "email": "oliver.reed@example.com",
+    "customer_id": "CUST008"
+  },
+  {
+    "name": "Amelia Carter",
+    "dob": "1988-11-14",
+    "postcode": "ZZ99 9ZZ",
+    "first_line_address": "42 Willow Lane",
+    "phone_number": "07700900123",
+    "email": "amelia.carter@outlook.com",
+    "customer_id": "CUST009"
+  },
+  {
+    "name": "Sophie Bennett",
+    "dob": "1998-09-12",
+    "postcode": "LM45 2RT",
+    "first_line_address": "29 Cedar Close",
+    "phone_number": "07700900456",
+    "email": "sophie.bennett@example.com",
+    "customer_id": "CUST010"
+  },
+  {
+    "name": "Daniel Harper",
+    "dob": "1997-06-21",
+    "postcode": "TN38 6QX",
+    "first_line_address": "56 Hawthorn Road",
+    "phone_number": "07700900582",
+    "email": "daniel.harper@example.com",
+    "customer_id": "CUST011"
+  }
+]
