@@ -361,5 +361,77 @@
       }
     },
     "created_at": "2026-10-08T15:50:43"
+  },
+  {
+    "payment_id": "PAY017",
+    "order_id": "ORD021",
+    "customer_id": "CUST016",
+    "status": "Paid",
+    "payment_method": "paypal",
+    "amounts": [
+      {
+        "currency": "CHF",
+        "total": 12.5,
+        "total_display": "CHF 12.50"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 13.63,
+      "total_display": "13.63 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T17:26:56"
+  },
+  {
+    "payment_id": "PAY018",
+    "order_id": "ORD022",
+    "customer_id": "CUST006",
+    "status": "Paid",
+    "payment_method": "test_card",
+    "amounts": [
+      {
+        "currency": "CHF",
+        "total": 8.9,
+        "total_display": "CHF 8.90"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 9.7,
+      "total_display": "9.70 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T17:35:17"
+  },
+  {
+    "payment_id": "PAY019",
+    "order_id": "ORD023",
+    "customer_id": "CUST005",
+    "status": "Paid",
+    "payment_method": "paypal",
+    "amounts": [
+      {
+        "currency": "CHF",
+        "total": 8.9,
+        "total_display": "CHF 8.90"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 9.7,
+      "total_display": "9.70 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T17:47:06"
   }
 ]

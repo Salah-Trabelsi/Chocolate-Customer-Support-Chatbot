@@ -133,5 +133,23 @@
     "phone_number": "09721740874",
     "email": "ethan.mitchell@example.com",
     "customer_id": "CUST015"
+  },
+  {
+    "name": "Maria Reynolds",
+    "dob": "1995-03-27",
+    "postcode": "LS6 2AB",
+    "first_line_address": "42 Cedar Lane",
+    "phone_number": "07788900156",
+    "email": "maria.reynolds@example.com",
+    "customer_id": "CUST016"
+  },
+  {
+    "name": "Thomas Mitchell",
+    "dob": "1995-04-10",
+    "postcode": "D89 4OL",
+    "first_line_address": "58 Maple Street",
+    "phone_number": "09721220425",
+    "email": "thomas.mitchell@example.com",
+    "customer_id": "CUST017"
   }
 ]

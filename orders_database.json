@@ -312,5 +312,81 @@
       1
     ],
     "payment_id": "PAY016"
+  },
+  {
+    "order_id": "ORD021",
+    "customer_id": "CUST016",
+    "status": "Paid",
+    "items": [
+      "ch005"
+    ],
+    "item_names": [
+      "Läderach FrischSchoggi Dark"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY017"
+  },
+  {
+    "order_id": "ORD022",
+    "customer_id": "CUST006",
+    "status": "Paid",
+    "items": [
+      "ch003"
+    ],
+    "item_names": [
+      "Lindt Lindor Milk Chocolate Truffles"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY018"
+  },
+  {
+    "order_id": "ORD023",
+    "customer_id": "CUST005",
+    "status": "Paid",
+    "items": [
+      "ch003"
+    ],
+    "item_names": [
+      "Lindt Lindor Milk Chocolate Truffles"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY019"
+  },
+  {
+    "order_id": "ORD024",
+    "customer_id": "CUST017",
+    "status": "Waiting for payment",
+    "items": [
+      "ch001"
+    ],
+    "item_names": [
+      "Lindt Excellence 70% Dark Chocolate Bar"
+    ],
+    "quantity": [
+      1
+    ]
+  },
+  {
+    "order_id": "ORD025",
+    "customer_id": "CUST017",
+    "status": "Waiting for payment",
+    "items": [
+      "ch001",
+      "ch020"
+    ],
+    "item_names": [
+      "Lindt Excellence 70% Dark Chocolate Bar",
+      "Hachez Milk Chocolate Leaves"
+    ],
+    "quantity": [
+      1,
+      1
+    ]
   }
 ]
