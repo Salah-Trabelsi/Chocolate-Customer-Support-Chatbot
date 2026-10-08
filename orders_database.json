@@ -268,5 +268,20 @@
       1
     ],
     "payment_id": "PAY014"
+  },
+  {
+    "order_id": "ORD018",
+    "customer_id": "CUST009",
+    "status": "Paid",
+    "items": [
+      "ch016"
+    ],
+    "item_names": [
+      "Ritter Sport White Whole Hazelnut"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY015"
   }
 ]

@@ -313,5 +313,29 @@
       }
     },
     "created_at": "2026-10-08T13:31:16"
+  },
+  {
+    "payment_id": "PAY015",
+    "order_id": "ORD018",
+    "customer_id": "CUST009",
+    "status": "Paid",
+    "payment_method": "paypal",
+    "amounts": [
+      {
+        "currency": "EUR",
+        "total": 3.3,
+        "total_display": "3.30 €"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 3.3,
+      "total_display": "3.30 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T14:15:24"
   }
 ]

@@ -3,6 +3,13 @@ from typing import List, Dict, Any
 from app.domains.chat.seed_data import DEFAULT_CUSTOMERS
 from app.domains.chat.repositories.json_repository import load_json_file, save_json_file
 from app.domains.chat.services.pricing_service import calculate_order_summary
+from app.domains.chat.services.product_service import find_inventory_item
+
+from app.domains.chat.services.id_service import (
+    get_next_customer_id,
+    get_next_order_id,
+    get_next_payment_id,
+)
 
 from langchain_core.tools import tool
 from app.domains.chat.config import (
@@ -74,79 +81,6 @@ def _save_payments(payments: List[Dict[str, Any]]) -> None:
     )
 
 
-######## ID HELPERS ###########
-
-def _get_next_order_id(orders: List[Dict[str, Any]]) -> str:
-    max_id = 0
-
-    for order in orders:
-        order_id = str(order.get("order_id", ""))
-
-        if order_id.startswith("ORD"):
-            try:
-                number = int(order_id.replace("ORD", ""))
-                max_id = max(max_id, number)
-            except ValueError:
-                continue
-
-    return f"ORD{max_id + 1:03d}"
-
-
-def _find_inventory_item(
-    inventory: List[Dict[str, Any]],
-    item_key: str,
-) -> Dict[str, Any] | None:
-    normalized_item_key = item_key.lower().strip()
-
-    for item in inventory:
-        if item["id"].lower().strip() == normalized_item_key:
-            return item
-
-        if item["name"].lower().strip() == normalized_item_key:
-            return item
-
-    return None
-
-
-
-
-def _get_next_customer_id(customers: List[Dict[str, Any]]) -> str:
-    """Generate the next customer ID based on the current customers."""
-
-    max_id = 0
-
-    for customer in customers:
-        customer_id = customer.get("customer_id", "")
-
-        if customer_id.startswith("CUST"):
-            try:
-                number = int(customer_id.replace("CUST", ""))
-                max_id = max(max_id, number)
-            except ValueError:
-                continue
-    
-    return f"CUST{max_id + 1:03d}"
-
-
-
-
-def _get_next_payment_id(payments: List[Dict[str, Any]]) -> str:
-    max_id = 0
-
-    for payment in payments:
-        payment_id = str(payment.get("payment_id", ""))
-
-        if payment_id.startswith("PAY"):
-            try:
-                number = int(payment_id.replace("PAY", ""))
-                max_id = max(max_id, number)
-            except ValueError:
-                continue
-
-    return f"PAY{max_id + 1:03d}"
-
-
-    
 @tool
 def data_protection_check(
     name: str,
@@ -231,7 +165,7 @@ def create_new_customer(first_name: str, surname: str, year_of_birth: int, month
         if customer["phone_number"].strip() == cleaned_phone_number:
             return "A customer profile with this phone number already exists."
 
-    customer_id = _get_next_customer_id(customers_database)
+    customer_id = get_next_customer_id(customers_database)
 
     new_customer = {
         "name": full_name,
@@ -449,7 +383,7 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
             )
             continue
 
-        inventory_item = _find_inventory_item(
+        inventory_item = find_inventory_item(
             inventory=inventory_database,
             item_key=item_key,
         )
@@ -479,7 +413,7 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
             + "\n".join(availability_messages)
         )
 
-    order_id = _get_next_order_id(orders_database)
+    order_id = get_next_order_id(orders_database)
 
     new_order = {
         "order_id": order_id,
@@ -738,7 +672,7 @@ def process_payment(
             ),
         }
 
-    payment_id = _get_next_payment_id(payments_database)
+    payment_id = get_next_payment_id(payments_database)
 
     new_payment = {
         "payment_id": payment_id,
