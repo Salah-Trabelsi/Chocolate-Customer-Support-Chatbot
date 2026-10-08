@@ -124,5 +124,14 @@
     "phone_number": "07700900421",
     "email": "delia.carter@outlook.com",
     "customer_id": "CUST014"
+  },
+  {
+    "name": "Ethan Mitchell",
+    "dob": "1992-11-08",
+    "postcode": "BN3 4GH",
+    "first_line_address": "78 Maple Avenue",
+    "phone_number": "09721740874",
+    "email": "ethan.mitchell@example.com",
+    "customer_id": "CUST015"
   }
 ]

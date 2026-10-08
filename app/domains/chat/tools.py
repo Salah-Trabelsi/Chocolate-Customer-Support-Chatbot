@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Dict, Any
 from app.domains.chat.seed_data import DEFAULT_CUSTOMERS
 from app.domains.chat.repositories.json_repository import load_json_file, save_json_file
@@ -10,6 +9,20 @@ from app.domains.chat.services.id_service import (
     get_next_customer_id,
     get_next_order_id,
     get_next_payment_id,
+)
+
+from app.domains.chat.services.payment_service import (
+    build_payment,
+    is_order_already_paid,
+    is_order_waiting_for_payment,
+    mark_order_as_paid,
+)
+
+from app.domains.chat.services.order_service import (
+    build_order,
+    find_order_by_id,
+    find_orders_by_customer_id,
+    order_belongs_to_customer,
 )
 
 from app.domains.chat.services.customer_service import (
@@ -321,10 +334,10 @@ def retrieve_existing_customer_orders(customer_id: str) -> List[Dict[str, Any]] 
 
     orders_database = _load_orders()
 
-    customer_orders = [
-        order for order in orders_database
-        if order["customer_id"] == customer_id
-    ]
+    customer_orders = find_orders_by_customer_id(
+        orders=orders_database,
+        customer_id=customer_id,
+    )
 
     if not customer_orders:
         return f"No orders associated with this customer id: {customer_id}"
@@ -405,14 +418,11 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
 
     order_id = get_next_order_id(orders_database)
 
-    new_order = {
-        "order_id": order_id,
-        "customer_id": customer_id,
-        "status": "Waiting for payment",
-        "items": list(resolved_items.keys()),
-        "item_names": [item["name"] for item in resolved_items.values()],
-        "quantity": [item["quantity"] for item in resolved_items.values()],
-    }
+    new_order = build_order(
+        order_id=order_id,
+        customer_id=customer_id,
+        resolved_items=resolved_items,
+    )
 
     orders_database.append(new_order)
 
@@ -481,13 +491,9 @@ def _verify_customer_and_order_data(
             "message": "DPA check failed. No customer with these details was found.",
         }
 
-    order = next(
-        (
-            order
-            for order in orders_database
-            if order["order_id"].upper().strip() == normalized_order_id
-        ),
-        None,
+    order = find_order_by_id(
+        orders=orders_database,
+        order_id=normalized_order_id,
     )
 
     if order is None:
@@ -500,7 +506,7 @@ def _verify_customer_and_order_data(
             },
         }
 
-    if order["customer_id"].upper().strip() != customer["customer_id"].upper().strip():
+    if not order_belongs_to_customer(order=order, customer_id=customer["customer_id"],):
         return {
             "status": "forbidden",
             "message": f"Order {normalized_order_id} does not belong to {customer['name']}.",
@@ -629,13 +635,9 @@ def process_payment(
 
     normalized_order_id = verified_order["order_id"].upper().strip()
 
-    order = next(
-        (
-            order
-            for order in orders_database
-            if order["order_id"].upper().strip() == normalized_order_id
-        ),
-        None,
+    order = find_order_by_id(
+        orders=orders_database,
+        order_id=normalized_order_id,
     )
 
     if order is None:
@@ -644,14 +646,14 @@ def process_payment(
             "message": f"Order {normalized_order_id} was not found.",
         }
 
-    if order["status"] == "Paid":
+    if is_order_already_paid(order):
         return {
             "status": "already_paid",
             "message": f"Order {normalized_order_id} has already been paid.",
             "order": order,
         }
 
-    if order["status"] != "Waiting for payment":
+    if not is_order_waiting_for_payment(order):
         return {
             "status": "invalid_status",
             "message": (
@@ -662,21 +664,19 @@ def process_payment(
 
     payment_id = get_next_payment_id(payments_database)
 
-    new_payment = {
-        "payment_id": payment_id,
-        "order_id": normalized_order_id,
-        "customer_id": customer["customer_id"],
-        "status": "Paid",
-        "payment_method": payment_method,
-        "amounts": order_summary["total_amounts"],
-        "total_converted": order_summary["total_converted"],
-        "created_at": datetime.now().isoformat(timespec="seconds"),
-    }
-
+    new_payment = build_payment(
+        payment_id=payment_id,
+        order_id=normalized_order_id,
+        customer_id=customer["customer_id"],
+        payment_method=payment_method,
+        order_summary=order_summary,
+    )
     payments_database.append(new_payment)
 
-    order["status"] = "Paid"
-    order["payment_id"] = payment_id
+    mark_order_as_paid(
+        order=order,
+        payment_id=payment_id,
+    )
 
     _save_orders(orders_database)
     _save_payments(payments_database)

@@ -283,5 +283,34 @@
       1
     ],
     "payment_id": "PAY015"
+  },
+  {
+    "order_id": "ORD019",
+    "customer_id": "CUST015",
+    "status": "Waiting for payment",
+    "items": [
+      "ch021"
+    ],
+    "item_names": [
+      "Swiss Dark Chocolate Orange Bar"
+    ],
+    "quantity": [
+      1
+    ]
+  },
+  {
+    "order_id": "ORD020",
+    "customer_id": "CUST015",
+    "status": "Paid",
+    "items": [
+      "ch021"
+    ],
+    "item_names": [
+      "Swiss Dark Chocolate Orange Bar"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY016"
   }
 ]
