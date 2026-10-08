@@ -12,6 +12,14 @@ from app.domains.chat.services.id_service import (
     get_next_payment_id,
 )
 
+from app.domains.chat.services.customer_service import (
+    build_customer_profile,
+    customer_exists_by_id,
+    email_exists,
+    find_customer_by_dpa,
+    phone_number_exists,
+)
+
 from langchain_core.tools import tool
 from app.domains.chat.config import (
     CUSTOMERS_FILE_PATH,
@@ -109,25 +117,26 @@ def data_protection_check(
 
     customers_database = _load_customers()
 
-    requested_dob = f"{year_of_birth}-{month_of_birth:02}-{day_of_birth:02}"
+    customer = find_customer_by_dpa(
+        customers=customers_database,
+        name=name,
+        postcode=postcode,
+        year_of_birth=year_of_birth,
+        month_of_birth=month_of_birth,
+        day_of_birth=day_of_birth,
+    )
 
-    for customer in customers_database:
-        if (
-            customer["name"].lower().strip() == name.lower().strip()
-            and customer["postcode"].lower().strip() == postcode.lower().strip()
-            and customer["dob"] == requested_dob
-        ):
-            return {
-                "status": "passed",
-                "message": "DPA check passed.",
-                "customer": customer,
-            }
+    if customer is not None:
+        return {
+            "status": "passed",
+            "message": "DPA check passed.",
+            "customer": customer,
+        }
 
     return {
         "status": "failed",
         "message": "DPA check failed. No customer with these details was found.",
     }
-
 
 @tool
 def create_new_customer(first_name: str, surname: str, year_of_birth: int, month_of_birth: int, day_of_birth: int, postcode: str, first_line_of_address: str, phone_number: str, email: str) -> str:
@@ -156,27 +165,26 @@ def create_new_customer(first_name: str, surname: str, year_of_birth: int, month
 
     customers_database = _load_customers()
 
-    full_name = f"{first_name.strip()} {surname.strip()}"
-    dob = f"{year_of_birth}-{month_of_birth:02}-{day_of_birth:02}"
+    if email_exists(customers_database, email):
+        return "A customer profile with this email already exists."
 
-    for customer in customers_database:
-        if customer["email"].lower().strip() == email.lower().strip():
-            return "A customer profile with this email already exists."
-
-        if customer["phone_number"].strip() == cleaned_phone_number:
-            return "A customer profile with this phone number already exists."
+    if phone_number_exists(customers_database, cleaned_phone_number):
+        return "A customer profile with this phone number already exists."
 
     customer_id = get_next_customer_id(customers_database)
 
-    new_customer = {
-        "name": full_name,
-        "dob": dob,
-        "postcode": postcode.strip(),
-        "first_line_address": first_line_of_address.strip(),
-        "phone_number": cleaned_phone_number,
-        "email": email.lower().strip(),
-        "customer_id": customer_id,
-    }
+    new_customer = build_customer_profile(
+        customer_id=customer_id,
+        first_name=first_name,
+        surname=surname,
+        year_of_birth=year_of_birth,
+        month_of_birth=month_of_birth,
+        day_of_birth=day_of_birth,
+        postcode=postcode,
+        first_line_of_address=first_line_of_address,
+        phone_number=cleaned_phone_number,
+        email=email,
+    )
 
     customers_database.append(new_customer)
     _save_customers(customers_database)
@@ -347,9 +355,9 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
     inventory_database = _load_inventory()
     orders_database = _load_orders()
 
-    customer_exists = any(
-        customer["customer_id"] == customer_id
-        for customer in customers_database
+    customer_exists = customer_exists_by_id(
+        customers=customers_database,
+        customer_id=customer_id,
     )
 
     if not customer_exists:
@@ -458,15 +466,13 @@ def _verify_customer_and_order_data(
     requested_dob = f"{year_of_birth}-{month_of_birth:02}-{day_of_birth:02}"
     normalized_order_id = order_id.upper().strip()
 
-    customer = next(
-        (
-            customer
-            for customer in customers_database
-            if customer["name"].lower().strip() == name.lower().strip()
-            and customer["postcode"].lower().strip() == postcode.lower().strip()
-            and customer["dob"] == requested_dob
-        ),
-        None,
+    customer = find_customer_by_dpa(
+        customers=customers_database,
+        name=name,
+        postcode=postcode,
+        year_of_birth=year_of_birth,
+        month_of_birth=month_of_birth,
+        day_of_birth=day_of_birth,
     )
 
     if customer is None:

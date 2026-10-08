@@ -115,5 +115,14 @@
     "phone_number": "07717900183",
     "email": "oliver.bennett@example.com",
     "customer_id": "CUST013"
+  },
+  {
+    "name": "delia Carter",
+    "dob": "1988-09-12",
+    "postcode": "1299 954",
+    "first_line_address": "50 halley Lane",
+    "phone_number": "07700900421",
+    "email": "delia.carter@outlook.com",
+    "customer_id": "CUST014"
   }
 ]
