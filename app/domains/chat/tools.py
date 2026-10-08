@@ -342,7 +342,7 @@ def search_for_product_recommendations(description: str) -> List[Dict[str, Any]]
 
 
 @tool
-def filter_products_by_price(max_price: float, currency: str):
+def filter_products_by_price(max_price: float, currency: str) -> List[Dict[str, Any]] | str:
     """
     Filter chocolate products by maximum price and currency.
 
@@ -357,7 +357,7 @@ def filter_products_by_price(max_price: float, currency: str):
         currency: Product currency. Use "CHF" for Swiss chocolate and "EUR" for German chocolate.
 
     Returns:
-        Matching products with price less than or equal to max_price.
+        Matching products with price less than or equal to max_price using fresh inventory data.
     """
 
     normalized_currency = currency.upper().strip()
@@ -365,27 +365,22 @@ def filter_products_by_price(max_price: float, currency: str):
     if normalized_currency in ["€", "EURO", "EUROS"]:
         normalized_currency = "EUR"
 
-    if normalized_currency in ["CHF", "FRANC", "FRANCS", "SWISS FRANC"]:
+    if normalized_currency in ["CHF", "FRANC", "FRANCS", "SWISS FRANC", "SWISS FRANCS"]:
         normalized_currency = "CHF"
 
-    results = vector_store.filter_products_by_price(
-        max_price=max_price,
-        currency=normalized_currency,
-    )
+    inventory_database = _load_inventory()
 
-    products = []
+    products = [
+        product
+        for product in inventory_database
+        if float(product["price"]) <= max_price
+        and product["currency"].upper().strip() == normalized_currency
+    ]
 
-    documents = results.get("documents", [])
-    metadatas = results.get("metadatas", [])
-
-    for document, metadata in zip(documents, metadatas):
-        products.append({
-            "matched_text": document,
-            "metadata": metadata,
-        })
+    if not products:
+        return f"No products found under {max_price} {normalized_currency}."
 
     return products
-
 
 
 @tool
