@@ -4,6 +4,7 @@ from app.domains.chat.seed_data import DEFAULT_CUSTOMERS
 from app.domains.chat.repositories.json_repository import load_json_file, save_json_file
 from app.domains.chat.services.pricing_service import calculate_order_summary
 from app.domains.chat.services.product_service import find_inventory_item
+from app.domains.chat.services.retrieval_service import format_chroma_results
 
 from app.domains.chat.services.id_service import (
     get_next_customer_id,
@@ -184,25 +185,6 @@ def create_new_customer(first_name: str, surname: str, year_of_birth: int, month
 
 
 
-def _format_chroma_results(results: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Convert ChromaDB query result into a clean list for the LLM."""
-
-    documents = results.get("documents", [[]])[0]
-    metadatas = results.get("metadatas", [[]])[0]
-    distances = results.get("distances", [[]])[0]
-
-    formatted_results = []
-
-    for document, metadata, distance in zip(documents, metadatas, distances):
-        formatted_results.append({
-            "matched_text": document,
-            "metadata": metadata,
-            "distance": distance,
-        })
-
-    return formatted_results
-
-
 @tool
 def query_knowledge_base(query: str) -> List[Dict[str, Any]]:
     """
@@ -220,7 +202,7 @@ def query_knowledge_base(query: str) -> List[Dict[str, Any]]:
     """
 
     results = vector_store.query_faqs(query=query)
-    return _format_chroma_results(results)
+    return format_chroma_results(results)
 
 
 @tool
@@ -245,7 +227,7 @@ def search_for_product_recommendations(description: str) -> List[Dict[str, Any]]
     """
 
     results = vector_store.query_inventories(query=description)
-    formatted_results = _format_chroma_results(results)
+    formatted_results = format_chroma_results(results)
 
     inventory_database = _load_inventory()
     products = []
