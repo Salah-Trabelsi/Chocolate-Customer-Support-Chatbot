@@ -97,5 +97,23 @@
     "phone_number": "07700900582",
     "email": "daniel.harper@example.com",
     "customer_id": "CUST011"
+  },
+  {
+    "name": "Max Doe",
+    "dob": "1995-05-06",
+    "postcode": "J1 7VJ",
+    "first_line_address": "456 light St",
+    "phone_number": "06649456789",
+    "email": "max.doe@example.com",
+    "customer_id": "CUST012"
+  },
+  {
+    "name": "Oliver Bennett",
+    "dob": "1992-09-14",
+    "postcode": "SW11 3AB",
+    "first_line_address": "24 Maple Street",
+    "phone_number": "07717900183",
+    "email": "oliver.bennett@example.com",
+    "customer_id": "CUST013"
   }
 ]

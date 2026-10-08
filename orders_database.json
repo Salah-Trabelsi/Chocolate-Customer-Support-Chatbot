@@ -220,5 +220,53 @@
       1
     ],
     "payment_id": "PAY011"
+  },
+  {
+    "order_id": "ORD015",
+    "customer_id": "CUST012",
+    "status": "Paid",
+    "items": [
+      "ch003"
+    ],
+    "item_names": [
+      "Lindt Lindor Milk Chocolate Truffles"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY012"
+  },
+  {
+    "order_id": "ORD016",
+    "customer_id": "CUST011",
+    "status": "Paid",
+    "items": [
+      "ch022",
+      "ch021"
+    ],
+    "item_names": [
+      "Swiss Milk Chocolate Caramel Sea Salt",
+      "Swiss Dark Chocolate Orange Bar"
+    ],
+    "quantity": [
+      1,
+      1
+    ],
+    "payment_id": "PAY013"
+  },
+  {
+    "order_id": "ORD017",
+    "customer_id": "CUST013",
+    "status": "Paid",
+    "items": [
+      "ch002"
+    ],
+    "item_names": [
+      "Lindt Excellence White Vanilla Bar"
+    ],
+    "quantity": [
+      1
+    ],
+    "payment_id": "PAY014"
   }
 ]

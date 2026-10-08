@@ -1,16 +1,14 @@
-import './App.css'
 import { PipecatClientAudio, PipecatClientProvider } from '@pipecat-ai/client-react'
 
-import Home from './pages/Home'
-import { pipecatClient } from './services/pipecatClient'
+import { pipecatClient } from '../services/pipecatClient'
 
-function App() {
+const AppProviders = ({ children }) => {
 	return (
 		<PipecatClientProvider client={pipecatClient}>
 			<PipecatClientAudio />
-			<Home />
+			{children}
 		</PipecatClientProvider>
 	)
 }
 
-export default App
+export default AppProviders

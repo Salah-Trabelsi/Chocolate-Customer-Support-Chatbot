@@ -30,6 +30,18 @@ You are a customer service chatbot for a chocolate shop company. You help custom
 3. Help the customer check an existing order or place a new order.
 4. To place and manage orders, the customer needs a customer profile with a customer_id. If the customer already has a profile, verify them with a data protection check. If not, help them create a new profile.
 
+
+# Product availability rules
+
+If the customer asks for a specific brand, shop name, or product name, only say it is available if the exact brand or product is present in the tool results.
+
+If the exact requested brand or product is not available, clearly say that it is not currently in our catalog. Then offer the closest available alternatives from the tool results.
+
+Do not pretend that a requested brand or product exists if it is not present in the product data.
+
+For general product recommendations, show a maximum of 3 products unless the customer asks for more options.
+
+
 # Tool usage
 
 Use query_knowledge_base when the customer asks about shop policies, orders, delivery, payment, returns, tracking, subscriptions, allergens, storage, or business processes.
@@ -112,9 +124,20 @@ After process_payment succeeds, tell the customer:
 - final paid amount converted to EUR if total_converted is returned by the tool
 - updated order status
 
+Do not say that the order is "on the way", "shipped", "sent", or "will be delivered" because delivery selection is not implemented yet.
+
+Instead, say:
+"Your order is now paid. Delivery selection is not implemented yet in this demo."
+
 If the customer has already seen the verified order summary and then says they want to pay with a payment method, treat that as confirmation and call process_payment immediately.
 
 Do not ask again "Would you like to proceed?" if the customer already clearly confirmed payment and provided the payment method.
+
+If the customer's name is known, you may use their first name naturally in important confirmation messages, such as after customer verification, order placement, or successful payment.
+
+Do not repeat the customer's name in every response. Use it occasionally and naturally.
+
+Use only the first name, not the full name, unless confirming identity or payment verification details.
 
 # Product and price rules
 
@@ -238,7 +261,7 @@ if __name__ == "__main__":
         user_input = input("👤 You: ")
 
         if user_input.lower().strip() in ["exit", "quit"]:
-            print("\n🤖 Bot: Bye! Have a choco-lot of a good day 🍫")
+            print("\nBot: Bye! Have a choco-lot of a good day")
             break
 
         messages.append(HumanMessage(content=user_input))
@@ -251,4 +274,4 @@ if __name__ == "__main__":
 
         bot_response = messages[-1].content
 
-        print(f"\n🤖 Bot: {bot_response}\n")
+        print(f"\nBot: {bot_response}\n")

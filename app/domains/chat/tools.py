@@ -1,81 +1,80 @@
-import json
-from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any
+from app.domains.chat.seed_data import DEFAULT_CUSTOMERS
+from app.domains.chat.repositories.json_repository import load_json_file, save_json_file
+from app.domains.chat.services.pricing_service import calculate_order_summary
 
 from langchain_core.tools import tool
+from app.domains.chat.config import (
+    CUSTOMERS_FILE_PATH,
+    INVENTORY_FILE_PATH,
+    ORDERS_FILE_PATH,
+    PAYMENTS_FILE_PATH,
+)
 from app.domains.chat.vector_store import ChocolateShopVectorStore
 
 
 vector_store = ChocolateShopVectorStore()
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-
-CUSTOMERS_FILE_PATH = PROJECT_ROOT / "customers_database.json"
-INVENTORY_FILE_PATH = PROJECT_ROOT / "inventory.json"
-ORDERS_FILE_PATH = PROJECT_ROOT / "orders_database.json"
-PAYMENTS_FILE_PATH = PROJECT_ROOT / "payments_database.json"
-
-
-BASE_CURRENCY = "EUR"
-
-EXCHANGE_RATES_TO_EUR = {
-    "EUR": 1.0,
-    "CHF": 1.09,
-}
-
-
-DEFAULT_CUSTOMERS = [
-    {
-        "name": "John Doe",
-        "postcode": "SW1A 1AA",
-        "dob": "1990-01-01",
-        "customer_id": "CUST001",
-        "first_line_address": "123 Main St",
-        "phone_number": "07712345678",
-        "email": "john.doe@example.com",
-    },
-    {
-        "name": "Jane Smith",
-        "postcode": "E1 6AN",
-        "dob": "1985-05-15",
-        "customer_id": "CUST002",
-        "first_line_address": "456 High St",
-        "phone_number": "07723456789",
-        "email": "jane.smith@example.com",
-    },
-]
-
-
-######## Load-- save -- search ORDERS ###########
+######## JSON DATABASE HELPERS ###########
 
 def _load_inventory() -> List[Dict[str, Any]]:
-    with open(INVENTORY_FILE_PATH, "r", encoding="utf-8") as file:
-        return json.load(file)
+    return load_json_file(
+        file_path=INVENTORY_FILE_PATH,
+        default_data=[],
+    )
 
 
 def _save_inventory(inventory: List[Dict[str, Any]]) -> None:
-    with open(INVENTORY_FILE_PATH, "w", encoding="utf-8") as file:
-        json.dump(inventory, file, ensure_ascii=False, indent=2)
-
-
-def _ensure_orders_file_exists() -> None:
-    if not ORDERS_FILE_PATH.exists():
-        with open(ORDERS_FILE_PATH, "w", encoding="utf-8") as file:
-            json.dump([], file, ensure_ascii=False, indent=2)
+    save_json_file(
+        file_path=INVENTORY_FILE_PATH,
+        data=inventory,
+    )
 
 
 def _load_orders() -> List[Dict[str, Any]]:
-    _ensure_orders_file_exists()
-
-    with open(ORDERS_FILE_PATH, "r", encoding="utf-8") as file:
-        return json.load(file)
+    return load_json_file(
+        file_path=ORDERS_FILE_PATH,
+        default_data=[],
+    )
 
 
 def _save_orders(orders: List[Dict[str, Any]]) -> None:
-    with open(ORDERS_FILE_PATH, "w", encoding="utf-8") as file:
-        json.dump(orders, file, ensure_ascii=False, indent=2)
+    save_json_file(
+        file_path=ORDERS_FILE_PATH,
+        data=orders,
+    )
 
+
+def _load_customers() -> List[Dict[str, Any]]:
+    return load_json_file(
+        file_path=CUSTOMERS_FILE_PATH,
+        default_data=DEFAULT_CUSTOMERS,
+    )
+
+
+def _save_customers(customers: List[Dict[str, Any]]) -> None:
+    save_json_file(
+        file_path=CUSTOMERS_FILE_PATH,
+        data=customers,
+    )
+
+
+def _load_payments() -> List[Dict[str, Any]]:
+    return load_json_file(
+        file_path=PAYMENTS_FILE_PATH,
+        default_data=[],
+    )
+
+
+def _save_payments(payments: List[Dict[str, Any]]) -> None:
+    save_json_file(
+        file_path=PAYMENTS_FILE_PATH,
+        data=payments,
+    )
+
+
+######## ID HELPERS ###########
 
 def _get_next_order_id(orders: List[Dict[str, Any]]) -> str:
     max_id = 0
@@ -109,26 +108,6 @@ def _find_inventory_item(
     return None
 
 
-######## Load-- save -- search CUSTOMERS ###########
-
-def _ensure_customers_file_exists() -> None:
-    """Ensure the customers database file exists, and create it with default data if not."""
-    if not CUSTOMERS_FILE_PATH.exists():
-        with open(CUSTOMERS_FILE_PATH, "w", encoding="utf-8") as file:
-            json.dump(DEFAULT_CUSTOMERS, file, ensure_ascii=False, indent=2)
-
-
-def _load_customers() -> List[Dict[str, Any]]:
-    """Load the customers database from the JSON file."""
-    _ensure_customers_file_exists()
-
-    with open(CUSTOMERS_FILE_PATH, "r", encoding="utf-8") as file:
-        return json.load(file)
-    
-def _save_customers(customers: List[Dict[str, Any]]) -> None:
-    """Save the customers database to the JSON file."""
-    with open(CUSTOMERS_FILE_PATH, "w", encoding="utf-8") as file:
-        json.dump(customers, file, ensure_ascii=False, indent=2)
 
 
 def _get_next_customer_id(customers: List[Dict[str, Any]]) -> str:
@@ -149,23 +128,6 @@ def _get_next_customer_id(customers: List[Dict[str, Any]]) -> str:
     return f"CUST{max_id + 1:03d}"
 
 
-######## Load-- save -- get  PAYMENTS ###########
-def _ensure_payments_file_exists() -> None:
-    if not PAYMENTS_FILE_PATH.exists():
-        with open(PAYMENTS_FILE_PATH, "w", encoding="utf-8") as file:
-            json.dump([], file, ensure_ascii=False, indent=2)
-
-
-def _load_payments() -> List[Dict[str, Any]]:
-    _ensure_payments_file_exists()
-
-    with open(PAYMENTS_FILE_PATH, "r", encoding="utf-8") as file:
-        return json.load(file)
-
-
-def _save_payments(payments: List[Dict[str, Any]]) -> None:
-    with open(PAYMENTS_FILE_PATH, "w", encoding="utf-8") as file:
-        json.dump(payments, file, ensure_ascii=False, indent=2)
 
 
 def _get_next_payment_id(payments: List[Dict[str, Any]]) -> str:
@@ -345,11 +307,38 @@ def search_for_product_recommendations(description: str) -> List[Dict[str, Any]]
         description: Description of the chocolate product the customer wants.
 
     Returns:
-        A list of relevant chocolate products from the inventory.
+        A list of relevant chocolate products from the inventory with fresh price and quantity.
     """
 
     results = vector_store.query_inventories(query=description)
-    return _format_chroma_results(results)
+    formatted_results = _format_chroma_results(results)
+
+    inventory_database = _load_inventory()
+    products = []
+
+    for result in formatted_results:
+        metadata = result.get("metadata", {})
+        product_id = metadata.get("id")
+
+        fresh_product = next(
+            (
+                item
+                for item in inventory_database
+                if item["id"] == product_id
+            ),
+            None,
+        )
+
+        if fresh_product is None:
+            continue
+
+        products.append({
+            "matched_text": result["matched_text"],
+            "distance": result["distance"],
+            "product": fresh_product,
+        })
+
+    return products
 
 
 @tool
@@ -516,7 +505,7 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
     _save_orders(orders_database)
     _save_inventory(inventory_database)
 
-    order_summary = _calculate_order_summary(
+    order_summary = calculate_order_summary(
         order=new_order,
         inventory=inventory_database,
     )
@@ -541,114 +530,6 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
             "total_converted": order_summary.get("total_converted"),
         },
     }
-
-def _format_price(amount: float, currency: str) -> str:
-    """Format the price with the appropriate currency symbol."""
-
-    if currency == "CHF":
-        return f"CHF {amount:.2f}"
-    
-    if currency == "EUR":
-        return f"{amount:.2f} €"
-    
-    return f"{amount:.2f} {currency}"
-
-
-def _convert_to_eur(amount: float, currency: str) -> float:
-    """
-    Convert an amount to EUR using static demo exchange rates.
-    """
-
-    normalized_currency = currency.upper().strip()
-
-    exchange_rate = EXCHANGE_RATES_TO_EUR.get(normalized_currency)
-
-    if exchange_rate is None:
-        raise ValueError(f"No EUR exchange rate configured for currency: {currency}")
-
-    return round(amount * exchange_rate, 2)
-
-
-
-def _calculate_order_summary(
-        order: Dict[str, Any],
-        inventory: List[Dict[str, Any]],
-) -> Dict[str, Any]:
-    """Calculate the order summary including totals by currency and final EUR total."""
-
-    line_items = []
-    totals_by_currency = {}
-    total_in_eur = 0.0
-
-    order_items = order.get("items", [])
-    quantities = order.get("quantity", [])
-
-    for item_id, quantity in zip(order_items, quantities):
-        inventory_item = next(
-            (item for item in inventory if item["id"] == item_id),
-            None
-        )
-
-        if inventory_item is None:
-            line_items.append({
-                "item_id": item_id,
-                "name": "Unknown product",
-                "quantity": quantity,
-                "price": None,
-                "currency": None,
-                "subtotal": None,
-                "subtotal_display": "Unknown",
-                "subtotal_in_eur": None,
-                "subtotal_in_eur_display": "Unknown",
-            })
-
-            continue
-
-        price = float(inventory_item["price"])
-        currency = inventory_item["currency"]
-        subtotal = round(price * quantity, 2)
-        subtotal_in_eur = _convert_to_eur(subtotal, currency)
-
-        totals_by_currency[currency] = round(
-            totals_by_currency.get(currency, 0) + subtotal,
-            2,
-        )
-
-        total_in_eur = round(total_in_eur + subtotal_in_eur, 2)
-
-        line_items.append({
-            "item_id": inventory_item["id"],
-            "name": inventory_item["name"],
-            "quantity": quantity,
-            "price": price,
-            "currency": currency,
-            "price_display": _format_price(price, currency),
-            "subtotal": subtotal,
-            "subtotal_display": _format_price(subtotal, currency),
-            "subtotal_in_eur": subtotal_in_eur,
-            "subtotal_in_eur_display": _format_price(subtotal_in_eur, "EUR"),
-        })
-
-    total_amounts = [
-        {
-            "currency": currency,
-            "total": amount,
-            "total_display": _format_price(amount, currency),
-        }
-        for currency, amount in totals_by_currency.items()
-    ]
-
-    return {
-        "line_items": line_items,
-        "total_amounts": total_amounts,
-        "total_converted": {
-            "currency": BASE_CURRENCY,
-            "total": total_in_eur,
-            "total_display": _format_price(total_in_eur, BASE_CURRENCY),
-            "exchange_rates": EXCHANGE_RATES_TO_EUR,
-        },
-    }
-
 
 
 def _verify_customer_and_order_data(
@@ -713,7 +594,7 @@ def _verify_customer_and_order_data(
             "order_customer_id": order["customer_id"],
         }
 
-    order_summary = _calculate_order_summary(
+    order_summary = calculate_order_summary(
         order=order,
         inventory=inventory_database,
     )

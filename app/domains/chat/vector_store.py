@@ -127,7 +127,6 @@ class ChocolateShopVectorStore:
             f"Chocolate type: {inventory.get('type', '')}. "
             f"Origin country: {inventory.get('origin_country', '')}. "
             f"Price: {inventory.get('price', '')} {inventory.get('currency', '')}. "
-            f"Quantity available: {inventory.get('quantity', '')}. "
             f"Description: {inventory.get('description', '')}"
         )
 
@@ -165,14 +164,14 @@ class ChocolateShopVectorStore:
 if __name__ == "__main__":
     vector_store = ChocolateShopVectorStore()
 
-    print("✅ Vector store initialized successfully")
+    print("Vector store initialized successfully")
     print("FAQ count:", vector_store.faq_collection.count())
     print("Inventory count:", vector_store.inventory_collection.count())
 
-    print("\n🔎 Testing FAQ search...")
+    print("\nTesting FAQ search...")
     faq_results = vector_store.query_faqs("How can I track my order?")
     print(faq_results)
 
-    print("\n🔎 Testing inventory search...")
+    print("\nTesting inventory search...")
     inventory_results = vector_store.query_inventories("dark Swiss chocolate")
     print(inventory_results)

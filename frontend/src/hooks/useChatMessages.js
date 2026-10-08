@@ -1,27 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 
-import Navbar from '../componenets/Navbar'
-import QuestionResponse from '../componenets/QuestionResponse'
-import InputText from '../componenets/InputText'
 import { askChatbot } from '../services/api'
+import { initialMessages } from '../constants/chatMessages'
+import { normalizeText } from '../utils/textUtils'
 
-const initialMessages = [
-	{
-		id: 1,
-		role: 'bot',
-		text: 'Hey, I am your chocolate chatbot 🍫 How can I help you?',
-	},
-]
+const createMessageId = () => Date.now() + Math.floor(Math.random() * 1000)
 
-function Home() {
+export const useChatMessages = () => {
 	const [messages, setMessages] = useState(initialMessages)
 	const [isLoading, setIsLoading] = useState(false)
 	const [isTyping, setIsTyping] = useState(false)
 
 	const typingIntervalRef = useRef(null)
-	const prevIsBusyRef = useRef(false)
-
-	const normalizeText = (value) => String(value || '').replace(/\s+/g, ' ').trim()
 
 	const stopTyping = () => {
 		if (typingIntervalRef.current) {
@@ -75,26 +65,28 @@ function Home() {
 		if (!text.trim() || isLoading || isTyping) return
 
 		const userMessage = {
-			id: Date.now(),
+			id: createMessageId(),
 			role: 'user',
 			text,
 		}
 
 		const historyBeforeNewMessage = messages
-		const isFirstUserMessage =
+
+		const isOnlyInitialMessage =
 			messages.length === initialMessages.length &&
 			messages[0]?.id === initialMessages[0]?.id
 
 		setMessages((currentMessages) =>
-			isFirstUserMessage ? [userMessage] : [...currentMessages, userMessage]
+			isOnlyInitialMessage ? [userMessage] : [...currentMessages, userMessage]
 		)
+
 		setIsLoading(true)
 
 		try {
 			const botResponse = await askChatbot(text, historyBeforeNewMessage)
 
 			const botMessage = {
-				id: Date.now() + 1,
+				id: createMessageId(),
 				role: 'bot',
 				text: '',
 				isTyping: true,
@@ -107,12 +99,12 @@ function Home() {
 		} catch (error) {
 			console.error(error)
 
-            const errorMessage = {
-                id: Date.now() + 1,
-                role: 'bot',
-                text: 'Sorry, something went wrong. Please try again 🍫',
-                isError: true,
-            }
+			const errorMessage = {
+				id: createMessageId(),
+				role: 'bot',
+				text: 'Sorry, something went wrong. Please try again 🍫',
+				isError: true,
+			}
 
 			setMessages((currentMessages) => [...currentMessages, errorMessage])
 			setIsLoading(false)
@@ -127,33 +119,6 @@ function Home() {
 		setIsTyping(false)
 	}
 
-	useEffect(() => {
-		const isBusy = isLoading || isTyping
-		const wasBusy = prevIsBusyRef.current
-		prevIsBusyRef.current = isBusy
-
-		if (!isBusy && wasBusy) {
-			const inputAnchor = document.getElementById('chat-input-anchor')
-			if (inputAnchor) {
-				inputAnchor.scrollIntoView({ behavior: 'smooth', block: 'end' })
-				return
-			}
-		}
-
-		const lastMessageElement = document.querySelector('.chat-thread .message-row:last-child')
-		if (lastMessageElement) {
-			lastMessageElement.scrollIntoView({ behavior: isBusy ? 'auto' : 'smooth', block: 'end' })
-			return
-		}
-
-		const inputAnchor = document.getElementById('chat-input-anchor')
-		if (inputAnchor) {
-			inputAnchor.scrollIntoView({ behavior: 'smooth', block: 'end' })
-		}
-	}, [messages, isLoading, isTyping])
-
-	useEffect(() => stopTyping, [])
-
 	const handleAddVoiceMessage = (message) => {
 		setMessages((currentMessages) => {
 			const isOnlyInitialMessage =
@@ -162,7 +127,7 @@ function Home() {
 
 			const nextMessage = {
 				...message,
-				id: message.id || Date.now(),
+				id: message.id || createMessageId(),
 				source: message.source || 'voice',
 			}
 
@@ -204,7 +169,9 @@ function Home() {
 					...currentMessages.slice(0, -1),
 					{
 						...lastMessage,
-						text: `${lastMessage.text} ${nextMessage.text}`.replace(/\s+/g, ' ').trim(),
+						text: `${lastMessage.text} ${nextMessage.text}`
+							.replace(/\s+/g, ' ')
+							.trim(),
 					},
 				]
 			}
@@ -228,22 +195,14 @@ function Home() {
 		})
 	}
 
-	return (
-		<div className="chatbot-page">
-			<Navbar />
+	useEffect(() => stopTyping, [])
 
-			<main className="chatbot-main">
-				<QuestionResponse messages={messages} isLoading={isLoading} />
-			</main>
-
-			<InputText
-				onSendMessage={handleSendMessage}
-				onClearChat={handleClearChat}
-				isLoading={isLoading || isTyping}
-				onAddVoiceMessage={handleAddVoiceMessage}
-			/>
-		</div>
-	)
+	return {
+		messages,
+		isLoading,
+		isTyping,
+		handleSendMessage,
+		handleClearChat,
+		handleAddVoiceMessage,
+	}
 }
-
-export default Home

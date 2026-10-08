@@ -241,5 +241,77 @@
       }
     },
     "created_at": "2026-07-07T15:16:19"
+  },
+  {
+    "payment_id": "PAY012",
+    "order_id": "ORD015",
+    "customer_id": "CUST012",
+    "status": "Paid",
+    "payment_method": "paypal",
+    "amounts": [
+      {
+        "currency": "CHF",
+        "total": 8.9,
+        "total_display": "CHF 8.90"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 9.7,
+      "total_display": "9.70 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T13:13:52"
+  },
+  {
+    "payment_id": "PAY013",
+    "order_id": "ORD016",
+    "customer_id": "CUST011",
+    "status": "Paid",
+    "payment_method": "apple_pay",
+    "amounts": [
+      {
+        "currency": "CHF",
+        "total": 10.4,
+        "total_display": "CHF 10.40"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 11.34,
+      "total_display": "11.34 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T13:22:34"
+  },
+  {
+    "payment_id": "PAY014",
+    "order_id": "ORD017",
+    "customer_id": "CUST013",
+    "status": "Paid",
+    "payment_method": "google_pay",
+    "amounts": [
+      {
+        "currency": "CHF",
+        "total": 4.7,
+        "total_display": "CHF 4.70"
+      }
+    ],
+    "total_converted": {
+      "currency": "EUR",
+      "total": 5.12,
+      "total_display": "5.12 €",
+      "exchange_rates": {
+        "EUR": 1.0,
+        "CHF": 1.09
+      }
+    },
+    "created_at": "2026-10-08T13:31:16"
   }
 ]
