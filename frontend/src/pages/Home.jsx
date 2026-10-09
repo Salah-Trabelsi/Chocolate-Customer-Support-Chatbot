@@ -1,6 +1,6 @@
-import Navbar from '../componenets/Navbar'
-import QuestionResponse from '../componenets/QuestionResponse'
-import InputText from '../componenets/InputText'
+import Navbar from '../components/Navbar'
+import QuestionResponse from '../components/QuestionResponse'
+import InputText from '../components/InputText'
 
 import { useAutoScroll } from '../hooks/useAutoScroll'
 import { useChatMessages } from '../hooks/useChatMessages'
