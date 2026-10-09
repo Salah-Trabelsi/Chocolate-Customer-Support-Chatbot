@@ -270,10 +270,7 @@ Frontend URL:
 ## Project Data Files
 
 Business data is read/written from JSON files in the root folder:
-- customers_database.json
 - inventory.json
-- orders_database.json
-- payments_database.json
 - FAQ.json
 
 Vector data is persisted under chroma_db.
