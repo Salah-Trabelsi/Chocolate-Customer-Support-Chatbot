@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: chocowise-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: chocowise
+      POSTGRES_USER: chocowise_user
+      POSTGRES_PASSWORD: chocowise_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - chocowise_postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: chocowise-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  chocowise_postgres_data:

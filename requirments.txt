@@ -9,3 +9,6 @@ openai
 python-dotenv
 loguru
 pipecat-ai
+sqlalchemy
+psycopg2-binary
+python-dotenv

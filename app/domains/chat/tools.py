@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from app.domains.chat.seed_data import DEFAULT_CUSTOMERS
+from langchain_core.tools import tool
 from app.domains.chat.repositories.json_repository import load_json_file, save_json_file
 from app.domains.chat.services.pricing_service import calculate_order_summary
 from app.domains.chat.services.product_service import find_inventory_item
@@ -25,6 +25,22 @@ from app.domains.chat.services.order_service import (
     order_belongs_to_customer,
 )
 
+from app.domains.chat.repositories.customer_repository import (
+    create_customer as create_customer_in_db,
+    get_all_customers,
+)
+
+from app.domains.chat.repositories.order_repository import (
+    create_order_in_db,
+    get_all_orders,
+    update_order_in_db,
+)
+
+from app.domains.chat.repositories.payment_repository import (
+    create_payment_in_db,
+    get_all_payments,
+)
+
 from app.domains.chat.services.customer_service import (
     build_customer_profile,
     customer_exists_by_id,
@@ -33,19 +49,13 @@ from app.domains.chat.services.customer_service import (
     phone_number_exists,
 )
 
-from langchain_core.tools import tool
-from app.domains.chat.config import (
-    CUSTOMERS_FILE_PATH,
-    INVENTORY_FILE_PATH,
-    ORDERS_FILE_PATH,
-    PAYMENTS_FILE_PATH,
-)
+from app.domains.chat.config import INVENTORY_FILE_PATH
 from app.domains.chat.vector_store import ChocolateShopVectorStore
 
 
 vector_store = ChocolateShopVectorStore()
 
-######## JSON DATABASE HELPERS ###########
+######## INVENTORY JSON HELPERS ###########
 
 def _load_inventory() -> List[Dict[str, Any]]:
     return load_json_file(
@@ -61,48 +71,6 @@ def _save_inventory(inventory: List[Dict[str, Any]]) -> None:
     )
 
 
-def _load_orders() -> List[Dict[str, Any]]:
-    return load_json_file(
-        file_path=ORDERS_FILE_PATH,
-        default_data=[],
-    )
-
-
-def _save_orders(orders: List[Dict[str, Any]]) -> None:
-    save_json_file(
-        file_path=ORDERS_FILE_PATH,
-        data=orders,
-    )
-
-
-def _load_customers() -> List[Dict[str, Any]]:
-    return load_json_file(
-        file_path=CUSTOMERS_FILE_PATH,
-        default_data=DEFAULT_CUSTOMERS,
-    )
-
-
-def _save_customers(customers: List[Dict[str, Any]]) -> None:
-    save_json_file(
-        file_path=CUSTOMERS_FILE_PATH,
-        data=customers,
-    )
-
-
-def _load_payments() -> List[Dict[str, Any]]:
-    return load_json_file(
-        file_path=PAYMENTS_FILE_PATH,
-        default_data=[],
-    )
-
-
-def _save_payments(payments: List[Dict[str, Any]]) -> None:
-    save_json_file(
-        file_path=PAYMENTS_FILE_PATH,
-        data=payments,
-    )
-
-
 @tool
 def data_protection_check(
     name: str,
@@ -112,23 +80,10 @@ def data_protection_check(
     day_of_birth: int,
 ):
     """
-    Perform a data protection check against existing customers.
-
-    Use this tool when the customer wants to retrieve account/profile details.
-    The customer must provide full name, postcode, and date of birth.
-
-    Args:
-        name: Customer first and last name.
-        postcode: Customer postcode.
-        year_of_birth: Birth year.
-        month_of_birth: Birth month.
-        day_of_birth: Birth day.
-
-    Returns:
-        Customer details if the data protection check passes.
+    Verify an existing customer using full name, postcode, and date of birth.
     """
 
-    customers_database = _load_customers()
+    customers_database = get_all_customers()
 
     customer = find_customer_by_dpa(
         customers=customers_database,
@@ -176,7 +131,7 @@ def create_new_customer(first_name: str, surname: str, year_of_birth: int, month
     if not cleaned_phone_number.isdigit() or len(cleaned_phone_number) != 11:
         return "Invalid phone number. It should contain exactly 11 digits."
 
-    customers_database = _load_customers()
+    customers_database = get_all_customers()
 
     if email_exists(customers_database, email):
         return "A customer profile with this email already exists."
@@ -199,8 +154,7 @@ def create_new_customer(first_name: str, surname: str, year_of_birth: int, month
         email=email,
     )
 
-    customers_database.append(new_customer)
-    _save_customers(customers_database)
+    create_customer_in_db(new_customer)
 
     return f"Customer registered successfully with customer_id {customer_id}."
 
@@ -228,24 +182,7 @@ def query_knowledge_base(query: str) -> List[Dict[str, Any]]:
 
 @tool
 def search_for_product_recommendations(description: str) -> List[Dict[str, Any]]:
-    """
-    Search the chocolate inventory for product recommendations.
-
-    Use this tool when the customer asks for chocolate products, for example:
-    - dark Swiss chocolate
-    - German milk chocolate
-    - white chocolate with nuts
-    - chocolate gifts
-    - chocolate suitable for birthdays
-    - affordable chocolate options
-    - premium chocolate boxes
-
-    Args:
-        description: Description of the chocolate product the customer wants.
-
-    Returns:
-        A list of relevant chocolate products from the inventory with fresh price and quantity.
-    """
+    """Search inventory for chocolate product recommendations by semantic description."""
 
     results = vector_store.query_inventories(query=description)
     formatted_results = format_chroma_results(results)
@@ -332,7 +269,7 @@ def retrieve_existing_customer_orders(customer_id: str) -> List[Dict[str, Any]] 
         List of orders associated with the customer.
     """
 
-    orders_database = _load_orders()
+    orders_database = get_all_orders()
 
     customer_orders = find_orders_by_customer_id(
         orders=orders_database,
@@ -364,9 +301,9 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
         Structured order confirmation with order details, totals, and status.
     """
 
-    customers_database = _load_customers()
+    customers_database = get_all_customers()
     inventory_database = _load_inventory()
-    orders_database = _load_orders()
+    orders_database = get_all_orders()
 
     customer_exists = customer_exists_by_id(
         customers=customers_database,
@@ -424,14 +361,13 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
         resolved_items=resolved_items,
     )
 
-    orders_database.append(new_order)
+    create_order_in_db(new_order)
 
     for item_id, item_data in resolved_items.items():
         for inventory_item in inventory_database:
             if inventory_item["id"] == item_id:
                 inventory_item["quantity"] -= item_data["quantity"]
 
-    _save_orders(orders_database)
     _save_inventory(inventory_database)
 
     order_summary = calculate_order_summary(
@@ -469,11 +405,9 @@ def _verify_customer_and_order_data(
     day_of_birth: int,
     order_id: str,
 ) -> Dict[str, Any]:
-    customers_database = _load_customers()
-    orders_database = _load_orders()
+    customers_database = get_all_customers()
+    orders_database = get_all_orders()
     inventory_database = _load_inventory()
-
-    requested_dob = f"{year_of_birth}-{month_of_birth:02}-{day_of_birth:02}"
     normalized_order_id = order_id.upper().strip()
 
     customer = find_customer_by_dpa(
@@ -626,8 +560,8 @@ def process_payment(
     if verification["status"] != "verified":
         return verification
 
-    orders_database = _load_orders()
-    payments_database = _load_payments()
+    orders_database = get_all_orders()
+    payments_database = get_all_payments()
 
     customer = verification["customer"]
     verified_order = verification["order"]
@@ -664,22 +598,18 @@ def process_payment(
 
     payment_id = get_next_payment_id(payments_database)
 
-    new_payment = build_payment(
+    payment = build_payment(
         payment_id=payment_id,
-        order_id=normalized_order_id,
+        order_id=order_id,
         customer_id=customer["customer_id"],
         payment_method=payment_method,
         order_summary=order_summary,
     )
-    payments_database.append(new_payment)
 
-    mark_order_as_paid(
-        order=order,
-        payment_id=payment_id,
-    )
+    new_payment = create_payment_in_db(payment)
 
-    _save_orders(orders_database)
-    _save_payments(payments_database)
+    mark_order_as_paid(order, payment_id)
+    update_order_in_db(order)
 
     return {
         "status": "paid",

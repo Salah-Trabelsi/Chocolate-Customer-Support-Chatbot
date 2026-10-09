@@ -4,6 +4,8 @@ An AI customer support chatbot for a chocolate shop with:
 - Text chat (React + FastAPI + LangGraph)
 - Tool-driven order and payment workflows
 - Voice chat (Pipecat + WebRTC + OpenAI STT/TTS)
+- PostgreSQL persistence for customers, orders, and payments
+- ChromaDB semantic retrieval for FAQ and product inventory
 
 ## What This Project Does
 
@@ -16,14 +18,19 @@ The assistant can:
 - Verify customer identity for order/payment security
 - Process payments
 
-The project stores business data in JSON files and uses ChromaDB for semantic retrieval over FAQ and product inventory.
+The project uses PostgreSQL for customer, order, and payment data. FAQ and product inventory data are stored in JSON files and indexed in ChromaDB for semantic retrieval.
+
+The inventory JSON file is also used as the current source of truth for product prices and stock quantities during the prototype phase
 
 ## Tech Stack
 
-- Backend: FastAPI, LangGraph, LangChain, ChromaDB
+- Backend: FastAPI, LangGraph, LangChain, ChromaDB, SQLAlchemy
+- Database: PostgreSQL
+- Database UI: Adminer
 - Frontend: React + Vite
 - Voice: Pipecat WebRTC transport, OpenAI STT, OpenAI TTS
 - LLM: OpenAI chat model with tool calling
+- DevOps: Docker Compose
 
 ## Architecture Overview
 
@@ -34,8 +41,18 @@ flowchart TD
     BE --> CS[Chat Service]
     CS --> LG[LangGraph Agent]
     LG --> TN[Tool Node]
-    TN --> D1[(FAQ + Inventory + Orders + Payments JSON)]
+
     TN --> VS[(ChromaDB Vector Store)]
+    TN --> INV[(inventory.json)]
+    TN --> PG[(PostgreSQL)]
+
+    FAQ[FAQ.json] --> VS
+    INV --> VS
+
+    PG --> CUST[customers]
+    PG --> ORD[orders + order_items]
+    PG --> PAY[payments]
+
     LG --> BE
     BE --> FE
 ```
@@ -51,13 +68,17 @@ The chatbot is implemented as a LangGraph loop:
 5. The loop continues until the model returns a final answer.
 
 Tools cover:
-- FAQ retrieval from vector search
-- Product recommendation and price filtering
-- Customer profile creation and data protection checks
-- Order creation and order verification
-- Payment processing
 
-This setup gives predictable business actions while still allowing natural conversation.
+- FAQ retrieval from ChromaDB vector search
+- Product recommendation using ChromaDB semantic inventory search
+- Product price filtering using fresh inventory JSON data
+- Customer profile creation using PostgreSQL
+- Customer data protection checks using PostgreSQL
+- Order creation and order verification using PostgreSQL
+- Payment processing using PostgreSQL
+- Stock quantity updates using inventory JSON
+
+This setup gives predictable business actions while still allowing natural conversation. ChromaDB is used for semantic search, PostgreSQL is used for customer/order/payment persistence, and `inventory.json` remains the current source of truth for product prices and stock.
 
 ## Voice Mode (Pipecat) Flow
 
@@ -77,6 +98,7 @@ The voice LLM layer applies voice-friendly response formatting (shorter, non-Mar
 
 - Python 3.10+
 - Node.js 18+
+- Docker Desktop
 - An OpenAI API key
 
 ## Environment Variables
@@ -85,6 +107,7 @@ Create a .env file in the project root:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
+DATABASE_URL=postgresql+psycopg://chocowise_user:chocowise_password@127.0.0.1:5433/chocowise
 ```
 
 Optional frontend environment variables (in frontend/chocolateApp-frontend/.env):
@@ -93,6 +116,113 @@ Optional frontend environment variables (in frontend/chocolateApp-frontend/.env)
 VITE_API_BASE_URL=http://localhost:8000/api
 VITE_VOICE_API_URL=http://localhost:7860/start
 ```
+
+
+## Run PostgreSQL With Docker
+
+The project uses Docker Compose to run PostgreSQL and Adminer locally.
+
+PostgreSQL is used for:
+
+- customers
+- orders
+- order_items
+- payments
+
+Adminer is used as a simple browser UI to inspect the database.
+
+### 1. Start Docker Desktop
+
+Make sure Docker Desktop is running.
+
+### 2. Start PostgreSQL and Adminer
+
+From the project root, run:
+
+```bash
+docker compose up -d
+```
+
+This starts the PostgreSQL and Adminer containers defined in `docker-compose.yml`.
+
+### 3. Check Running Containers
+
+```bash
+docker ps
+```
+
+You should see containers similar to:
+
+```txt
+chocowise-postgres
+chocowise-adminer
+```
+
+### 4. PostgreSQL Connection
+
+PostgreSQL runs inside Docker on port `5432`, but it is exposed on the host machine through port `5433`.
+
+The backend connects to PostgreSQL using this value in `.env`:
+
+```env
+DATABASE_URL=postgresql+psycopg://chocowise_user:chocowise_password@127.0.0.1:5433/chocowise
+```
+
+### 5. Open Adminer
+
+Adminer is available at:
+
+```txt
+http://localhost:8080
+```
+
+Login with:
+
+```txt
+System: PostgreSQL
+Server: postgres
+Username: chocowise_user
+Password: chocowise_password
+Database: chocowise
+```
+
+Important:
+
+- In Adminer, use `postgres` as the server name.
+- In the Python `.env`, use `127.0.0.1:5433`.
+
+### 6. Create Database Tables
+
+After PostgreSQL is running, create the database tables:
+
+```bash
+python -m app.domains.chat.repositories.init_db
+```
+
+This creates:
+
+- customers
+- orders
+- order_items
+- payments
+
+### 7. Optional: Migrate Existing JSON Data
+
+If you have existing prototype data in JSON files, migrate it into PostgreSQL:
+
+```bash
+python -m app.domains.chat.repositories.migrate_json_to_postgres
+```
+
+This imports:
+
+- customer data into `customers`
+- order data into `orders`
+- order item data into `order_items`
+- payment data into `payments`
+
+This migration is intended for local development and prototype setup.
+
 
 ## Run Backend (Text Chat API)
 

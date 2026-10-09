@@ -26,6 +26,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+
+# Local backup JSON files
+_backup_customers_database.json
+_backup_orders_database.json
+_backup_payments_database.json
+
 # OS files
 .DS_Store
 Thumbs.db
