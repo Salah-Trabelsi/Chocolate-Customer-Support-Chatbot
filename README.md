@@ -59,7 +59,7 @@ python -m venv .venv
 Activate it on Windows PowerShell:
 
 ```powershell
-.venv\Scripts\Activate.ps1
+ .venv\Scripts\activate
 ```
 
 Or on macOS/Linux:
@@ -92,7 +92,6 @@ VITE_API_BASE_URL=http://localhost:8000/api
 VITE_VOICE_API_URL=http://localhost:7860/start
 ```
 
-Keep real API keys and local `.env` files out of version control.
 
 ### 3. Start PostgreSQL and Adminer
 
