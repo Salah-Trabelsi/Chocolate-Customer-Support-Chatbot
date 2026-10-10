@@ -47,14 +47,8 @@ The diagram shows the text-chat workflow. Voice conversations use a dedicated Pi
 
 ## Local Setup
 
-### 1. Clone the Repository
 
-```bash
-git clone https://github.com/Salah-Trabelsi/Chocolate-Customer-Support-Chatbot.git
-cd Chocolate-Customer-Support-Chatbot
-```
-
-### 2. Create a Python Virtual Environment
+### 1. Create a Python Virtual Environment
 
 From the project root:
 
@@ -80,9 +74,7 @@ Install the Python dependencies:
 python -m pip install -r requirments.txt
 ```
 
-The filename `requirments.txt` matches the current repository spelling.
-
-### 3. Configure Environment Variables
+### 2. Configure Environment Variables
 
 Create a `.env` file in the project root:
 
@@ -102,7 +94,7 @@ VITE_VOICE_API_URL=http://localhost:7860/start
 
 Keep real API keys and local `.env` files out of version control.
 
-### 4. Start PostgreSQL and Adminer
+### 3. Start PostgreSQL and Adminer
 
 Start Docker, then run this command from the project root:
 
@@ -133,7 +125,7 @@ The locally running backend connects through:
 127.0.0.1:5433
 ```
 
-### 5. Create Database Tables
+### 4. Create Database Tables
 
 With PostgreSQL running and the Python environment activated:
 
@@ -148,7 +140,7 @@ This creates the application tables:
 - `order_items`
 - `payments`
 
-### 6. Initialize ChromaDB
+### 5. Initialize ChromaDB
 
 FAQ and product collections must be populated before semantic search can return results.
 
@@ -165,7 +157,7 @@ chroma_db/
 
 **Documentation TODO:** Add the repository's exact indexing command here, or document automatic initialization if the application performs indexing at startup.
 
-### 7. Optional: Migrate Previous JSON Data
+### 6. Optional: Migrate Previous JSON Data
 
 If you have customer, order, and payment data from the earlier JSON-based prototype:
 
@@ -191,7 +183,7 @@ Use separate terminals for the backend, voice server, and frontend. Activate the
 From the project root:
 
 ```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload 
 ```
 
 Backend URL:
@@ -259,4 +251,4 @@ Password: chocowise_password
 Database: chocowise
 ```
 
-Adminer connects to PostgreSQL through the Docker service name `postgres`. The backend runs on the host machine and uses `127.0.0.1:5433`.
+Adminer connects to PostgreSQL through the Docker service name `postgres`. The backend runs on the host machine and uses `127.0.0.1:5433`
