@@ -38,3 +38,11 @@ Thumbs.db
 
 # Runtime/local data
 chroma_db/
+
+# Test coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# Ruff cache
+.ruff_cache/
