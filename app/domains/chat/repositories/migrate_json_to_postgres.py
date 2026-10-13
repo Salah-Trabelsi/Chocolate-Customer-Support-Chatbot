@@ -70,17 +70,9 @@ def migrate_orders(db):
         quantities = order.get("quantity", [])
 
         for index, product_id in enumerate(items):
-            product_name = (
-                item_names[index]
-                if index < len(item_names)
-                else product_id
-            )
+            product_name = item_names[index] if index < len(item_names) else product_id
 
-            quantity = (
-                quantities[index]
-                if index < len(quantities)
-                else 1
-            )
+            quantity = quantities[index] if index < len(quantities) else 1
 
             db_order_item = OrderItem(
                 order_id=order["order_id"],
@@ -97,8 +89,6 @@ def migrate_orders(db):
 
 def migrate_payments(db):
     payments = load_json_file(PAYMENTS_FILE_PATH, [])
-
-    skipped_payments = 0
 
     for payment in payments:
         amounts = payment.get("amounts", [])

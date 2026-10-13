@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+
 def find_inventory_item(
     inventory: List[Dict[str, Any]],
     item_key: str,

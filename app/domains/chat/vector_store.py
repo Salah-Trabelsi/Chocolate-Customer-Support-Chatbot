@@ -14,7 +14,16 @@ load_dotenv()
 
 
 class Product:
-    def __init__(self, name:str, id:str, description:str, price:float, type:str, origin_country:str, quantity:int):
+    def __init__(
+        self,
+        name: str,
+        id: str,
+        description: str,
+        price: float,
+        type: str,
+        origin_country: str,
+        quantity: int,
+    ):
         self.name = name
         self.id = id
         self.description = description
@@ -34,13 +43,10 @@ class CustomEmbeddingClass(EmbeddingFunction):
     def __init__(self, model_name: str = EMBEDDING_MODEL):
         self.embedding_model = OpenAIEmbeddings(model=model_name)
 
-
     def __call__(self, input: List[str]) -> Embeddings:
         return self.embedding_model.embed_documents(list(input))
-    
 
 
-    
 class ChocolateShopVectorStore:
     def __init__(self):
         db = PersistentClient(path=DB_PATH)
@@ -77,19 +83,23 @@ class ChocolateShopVectorStore:
 
             documents.append(question)
             ids.append(f"faq-question-{index}")
-            metadatas.append({
-                "question": question,
-                "answer": answer,
-                "source": "faq_question",
-            })
+            metadatas.append(
+                {
+                    "question": question,
+                    "answer": answer,
+                    "source": "faq_question",
+                }
+            )
 
             documents.append(answer)
             ids.append(f"faq-answer-{index}")
-            metadatas.append({
-                "question": question,
-                "answer": answer,
-                "source": "faq_answer",
-            })
+            metadatas.append(
+                {
+                    "question": question,
+                    "answer": answer,
+                    "source": "faq_answer",
+                }
+            )
 
         self.faq_collection.add(
             documents=documents,
@@ -141,7 +151,6 @@ class ChocolateShopVectorStore:
             query_texts=[query],
             n_results=n_results,
         )
-    
 
     def filter_products_by_price(
         self,
@@ -159,6 +168,7 @@ class ChocolateShopVectorStore:
             limit=n_results,
             include=["documents", "metadatas"],
         )
+
 
 ###########-----##########
 if __name__ == "__main__":

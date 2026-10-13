@@ -1,5 +1,4 @@
 from app.core.database import Base, engine
-from app.domains.chat.repositories import models
 
 
 def init_db():

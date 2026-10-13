@@ -6,6 +6,7 @@ from app.domains.chat.service import ChatService
 
 router = APIRouter()
 
+
 @router.post("/ask", response_model=ChatResponse)
 async def ask_chatbot(chat_request: ChatRequest) -> ChatResponse:
     """
@@ -25,11 +26,8 @@ async def ask_chatbot(chat_request: ChatRequest) -> ChatResponse:
     try:
         return chat_service.get_response(chat_request)
     except ValueError as error:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(error)
-        )
-    
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error))
+
     except Exception as error:
         print("Chatbot error:", error)
 

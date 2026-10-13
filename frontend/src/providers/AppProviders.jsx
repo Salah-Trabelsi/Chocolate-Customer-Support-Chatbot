@@ -1,14 +1,17 @@
-import { PipecatClientAudio, PipecatClientProvider } from '@pipecat-ai/client-react'
+import {
+  PipecatClientAudio,
+  PipecatClientProvider,
+} from "@pipecat-ai/client-react";
 
-import { pipecatClient } from '../services/pipecatClient'
+import { pipecatClient } from "../services/pipecatClient";
 
 const AppProviders = ({ children }) => {
-	return (
-		<PipecatClientProvider client={pipecatClient}>
-			<PipecatClientAudio />
-			{children}
-		</PipecatClientProvider>
-	)
-}
+  return (
+    <PipecatClientProvider client={pipecatClient}>
+      <PipecatClientAudio />
+      {children}
+    </PipecatClientProvider>
+  );
+};
 
-export default AppProviders
+export default AppProviders;

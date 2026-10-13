@@ -57,6 +57,7 @@ vector_store = ChocolateShopVectorStore()
 
 ######## INVENTORY JSON HELPERS ###########
 
+
 def _load_inventory() -> List[Dict[str, Any]]:
     return load_json_file(
         file_path=INVENTORY_FILE_PATH,
@@ -106,8 +107,19 @@ def data_protection_check(
         "message": "DPA check failed. No customer with these details was found.",
     }
 
+
 @tool
-def create_new_customer(first_name: str, surname: str, year_of_birth: int, month_of_birth: int, day_of_birth: int, postcode: str, first_line_of_address: str, phone_number: str, email: str) -> str:
+def create_new_customer(
+    first_name: str,
+    surname: str,
+    year_of_birth: int,
+    month_of_birth: int,
+    day_of_birth: int,
+    postcode: str,
+    first_line_of_address: str,
+    phone_number: str,
+    email: str,
+) -> str:
     """
     Creates a customer profile, so that they can place orders.
 
@@ -159,7 +171,6 @@ def create_new_customer(first_name: str, surname: str, year_of_birth: int, month
     return f"Customer registered successfully with customer_id {customer_id}."
 
 
-
 @tool
 def query_knowledge_base(query: str) -> List[Dict[str, Any]]:
     """
@@ -195,28 +206,28 @@ def search_for_product_recommendations(description: str) -> List[Dict[str, Any]]
         product_id = metadata.get("id")
 
         fresh_product = next(
-            (
-                item
-                for item in inventory_database
-                if item["id"] == product_id
-            ),
+            (item for item in inventory_database if item["id"] == product_id),
             None,
         )
 
         if fresh_product is None:
             continue
 
-        products.append({
-            "matched_text": result["matched_text"],
-            "distance": result["distance"],
-            "product": fresh_product,
-        })
+        products.append(
+            {
+                "matched_text": result["matched_text"],
+                "distance": result["distance"],
+                "product": fresh_product,
+            }
+        )
 
     return products
 
 
 @tool
-def filter_products_by_price(max_price: float, currency: str) -> List[Dict[str, Any]] | str:
+def filter_products_by_price(
+    max_price: float, currency: str
+) -> List[Dict[str, Any]] | str:
     """
     Filter chocolate products by maximum price and currency.
 
@@ -280,7 +291,6 @@ def retrieve_existing_customer_orders(customer_id: str) -> List[Dict[str, Any]] 
         return f"No orders associated with this customer id: {customer_id}"
 
     return customer_orders
-
 
 
 @tool
@@ -348,9 +358,8 @@ def place_order(items: Dict[str, int], customer_id: str) -> Dict[str, Any] | str
         }
 
     if availability_messages:
-        return (
-            "Order cannot be placed due to the following issues:\n"
-            + "\n".join(availability_messages)
+        return "Order cannot be placed due to the following issues:\n" + "\n".join(
+            availability_messages
         )
 
     order_id = get_next_order_id(orders_database)
@@ -440,7 +449,10 @@ def _verify_customer_and_order_data(
             },
         }
 
-    if not order_belongs_to_customer(order=order, customer_id=customer["customer_id"],):
+    if not order_belongs_to_customer(
+        order=order,
+        customer_id=customer["customer_id"],
+    ):
         return {
             "status": "forbidden",
             "message": f"Order {normalized_order_id} does not belong to {customer['name']}.",

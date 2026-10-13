@@ -44,11 +44,7 @@ def find_order_by_id_from_db(order_id: str) -> Dict[str, Any] | None:
     try:
         normalized_order_id = order_id.upper().strip()
 
-        order = (
-            db.query(Order)
-            .filter(Order.order_id == normalized_order_id)
-            .first()
-        )
+        order = db.query(Order).filter(Order.order_id == normalized_order_id).first()
 
         if order is None:
             return None
@@ -115,7 +111,9 @@ def create_order_in_db(order_data: Dict[str, Any]) -> Dict[str, Any]:
             order_item = OrderItem(
                 order_id=order_data["order_id"],
                 product_id=product_id,
-                product_name=item_names[index] if index < len(item_names) else product_id,
+                product_name=item_names[index]
+                if index < len(item_names)
+                else product_id,
                 quantity=quantities[index] if index < len(quantities) else 1,
             )
 
@@ -137,11 +135,7 @@ def update_order_in_db(order_data: Dict[str, Any]) -> Dict[str, Any]:
     db = get_db_session()
 
     try:
-        order = (
-            db.query(Order)
-            .filter(Order.order_id == order_data["order_id"])
-            .first()
-        )
+        order = db.query(Order).filter(Order.order_id == order_data["order_id"]).first()
 
         if order is None:
             raise ValueError(f"Order {order_data['order_id']} was not found.")

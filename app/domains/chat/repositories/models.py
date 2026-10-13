@@ -23,7 +23,9 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(String(20), unique=True, nullable=False, index=True)
-    customer_id = Column(String(20), ForeignKey("customers.customer_id"), nullable=False)
+    customer_id = Column(
+        String(20), ForeignKey("customers.customer_id"), nullable=False
+    )
     status = Column(String(50), nullable=False)
     payment_id = Column(String(20), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -45,7 +47,9 @@ class Payment(Base):
     id = Column(Integer, primary_key=True, index=True)
     payment_id = Column(String(20), unique=True, nullable=False, index=True)
     order_id = Column(String(20), ForeignKey("orders.order_id"), nullable=False)
-    customer_id = Column(String(20), ForeignKey("customers.customer_id"), nullable=False)
+    customer_id = Column(
+        String(20), ForeignKey("customers.customer_id"), nullable=False
+    )
     status = Column(String(50), nullable=False)
     payment_method = Column(String(100), nullable=False)
     amounts = Column(JSON, nullable=False)

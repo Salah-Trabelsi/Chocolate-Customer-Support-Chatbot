@@ -29,9 +29,7 @@ def test_ask_chatbot_returns_chat_response(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "Bot response to: I want chocolate"
-    }
+    assert response.json() == {"message": "Bot response to: I want chocolate"}
 
 
 def test_ask_chatbot_accepts_history(monkeypatch):
@@ -66,9 +64,7 @@ def test_ask_chatbot_accepts_history(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "History received"
-    }
+    assert response.json() == {"message": "History received"}
 
     assert captured_request["message"] == "What did I ask before?"
     assert len(captured_request["history"]) == 2
@@ -96,9 +92,7 @@ def test_ask_chatbot_returns_400_when_service_raises_value_error(monkeypatch):
     )
 
     assert response.status_code == 400
-    assert response.json() == {
-        "detail": "Invalid customer data"
-    }
+    assert response.json() == {"detail": "Invalid customer data"}
 
 
 def test_ask_chatbot_returns_500_when_service_raises_unexpected_error(monkeypatch):

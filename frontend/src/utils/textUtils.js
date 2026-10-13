@@ -1,2 +1,4 @@
 export const normalizeText = (value) =>
-	String(value || '').replace(/\s+/g, ' ').trim()
+  String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();

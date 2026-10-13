@@ -11,10 +11,12 @@ def format_chroma_results(results: Dict[str, Any]) -> List[Dict[str, Any]]:
     formatted_results = []
 
     for document, metadata, distance in zip(documents, metadatas, distances):
-        formatted_results.append({
-            "matched_text": document,
-            "metadata": metadata,
-            "distance": distance,
-        })
+        formatted_results.append(
+            {
+                "matched_text": document,
+                "metadata": metadata,
+                "distance": distance,
+            }
+        )
 
     return formatted_results

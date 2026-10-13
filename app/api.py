@@ -6,7 +6,6 @@ api_router = APIRouter()
 
 
 api_router.include_router(
-
     chat_router,
     prefix="/chat",
     tags=["Chocolate Shop Chatbot"],

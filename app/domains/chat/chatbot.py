@@ -255,7 +255,6 @@ graph.add_edge("tool_node", "agent")
 app = graph.compile()
 
 
-
 #######
 if __name__ == "__main__":
     from langchain_core.messages import HumanMessage
@@ -274,9 +273,7 @@ if __name__ == "__main__":
 
         messages.append(HumanMessage(content=user_input))
 
-        result = app.invoke({
-            "messages": messages
-        })
+        result = app.invoke({"messages": messages})
 
         messages = result["messages"]
 

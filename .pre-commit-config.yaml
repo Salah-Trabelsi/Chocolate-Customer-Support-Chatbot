@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        files: ^frontend/src/.*\.(js|jsx|css|json|md)$
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: npm run lint --prefix frontend
+        language: system
+        files: ^frontend/src/.*\.(js|jsx)$
+        pass_filenames: false
+
+      - id: bandit
+        name: bandit
+        entry: bandit -r app
+        language: system
+        types: [python]
+        pass_filenames: false

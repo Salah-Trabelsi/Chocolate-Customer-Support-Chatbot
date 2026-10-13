@@ -47,17 +47,19 @@ def calculate_order_summary(
         )
 
         if inventory_item is None:
-            line_items.append({
-                "item_id": item_id,
-                "name": "Unknown product",
-                "quantity": quantity,
-                "price": None,
-                "currency": None,
-                "subtotal": None,
-                "subtotal_display": "Unknown",
-                "subtotal_in_eur": None,
-                "subtotal_in_eur_display": "Unknown",
-            })
+            line_items.append(
+                {
+                    "item_id": item_id,
+                    "name": "Unknown product",
+                    "quantity": quantity,
+                    "price": None,
+                    "currency": None,
+                    "subtotal": None,
+                    "subtotal_display": "Unknown",
+                    "subtotal_in_eur": None,
+                    "subtotal_in_eur_display": "Unknown",
+                }
+            )
             continue
 
         price = float(inventory_item["price"])
@@ -72,18 +74,20 @@ def calculate_order_summary(
 
         total_in_eur = round(total_in_eur + subtotal_in_eur, 2)
 
-        line_items.append({
-            "item_id": inventory_item["id"],
-            "name": inventory_item["name"],
-            "quantity": quantity,
-            "price": price,
-            "currency": currency,
-            "price_display": format_price(price, currency),
-            "subtotal": subtotal,
-            "subtotal_display": format_price(subtotal, currency),
-            "subtotal_in_eur": subtotal_in_eur,
-            "subtotal_in_eur_display": format_price(subtotal_in_eur, "EUR"),
-        })
+        line_items.append(
+            {
+                "item_id": inventory_item["id"],
+                "name": inventory_item["name"],
+                "quantity": quantity,
+                "price": price,
+                "currency": currency,
+                "price_display": format_price(price, currency),
+                "subtotal": subtotal,
+                "subtotal_display": format_price(subtotal, currency),
+                "subtotal_in_eur": subtotal_in_eur,
+                "subtotal_in_eur_display": format_price(subtotal_in_eur, "EUR"),
+            }
+        )
 
     total_amounts = [
         {

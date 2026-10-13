@@ -50,9 +50,7 @@ def find_customer_by_email(email: str) -> Dict[str, Any] | None:
 
     try:
         customer = (
-            db.query(Customer)
-            .filter(Customer.email == email.lower().strip())
-            .first()
+            db.query(Customer).filter(Customer.email == email.lower().strip()).first()
         )
 
         if customer is None:

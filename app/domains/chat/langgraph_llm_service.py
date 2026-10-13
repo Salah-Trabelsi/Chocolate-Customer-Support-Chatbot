@@ -16,7 +16,6 @@ from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.utils.tracing.service_decorators import traced_llm
 
 
-
 # In our chocolate chatbot graph, the main LangGraph node is called "agent".
 # Some LangGraph/LangChain streams may also expose "model".
 _SPOKEN_NODES = {"agent", "model"}
@@ -110,7 +109,7 @@ def _tool_exchange(input_messages: list, final_messages: list) -> list:
     The spoken assistant answer is added by Pipecat's assistant aggregator.
     """
 
-    new_messages = final_messages[len(input_messages):]
+    new_messages = final_messages[len(input_messages) :]
 
     return [
         message

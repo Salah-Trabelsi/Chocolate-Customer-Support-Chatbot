@@ -25,9 +25,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Chocolate Customer Support API is running 🍫"
-    }
+    return {"message": "Chocolate Customer Support API is running 🍫"}
 
 
 app.include_router(

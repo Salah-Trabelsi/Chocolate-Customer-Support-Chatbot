@@ -1,181 +1,178 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { RTVIEvent } from '@pipecat-ai/client-js'
+import { useCallback, useRef, useState } from "react";
+import { RTVIEvent } from "@pipecat-ai/client-js";
 import {
-	usePipecatClient,
-	usePipecatClientTransportState,
-	useRTVIClientEvent,
-} from '@pipecat-ai/client-react'
+  usePipecatClient,
+  usePipecatClientTransportState,
+  useRTVIClientEvent,
+} from "@pipecat-ai/client-react";
 
 import {
-	CONNECTED_VOICE_STATES,
-	CONNECTING_VOICE_STATES,
-	VOICE_API_URL,
-} from '../config/voiceConfig'
+  CONNECTED_VOICE_STATES,
+  CONNECTING_VOICE_STATES,
+  VOICE_API_URL,
+} from "../config/voiceConfig";
 
 const getEventText = (payload) => {
-	if (typeof payload === 'string') return payload
+  if (typeof payload === "string") return payload;
 
-	if (!payload || typeof payload !== 'object') return ''
+  if (!payload || typeof payload !== "object") return "";
 
-	return payload.text || payload.data?.text || payload.accumulated_text || ''
-}
+  return payload.text || payload.data?.text || payload.accumulated_text || "";
+};
 
-const createMessageId = () => Date.now() + Math.floor(Math.random() * 1000)
+const createMessageId = () => Date.now() + Math.floor(Math.random() * 1000);
 
 export const useVoiceChat = ({ onAddVoiceMessage }) => {
-	const [voiceError, setVoiceError] = useState(null)
-	const [isUserSpeaking, setIsUserSpeaking] = useState(false)
-	const [isBotSpeaking, setIsBotSpeaking] = useState(false)
+  const [voiceError, setVoiceError] = useState(null);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [isBotSpeaking, setIsBotSpeaking] = useState(false);
 
-	const lastVoiceMessageRef = useRef({ role: '', text: '' })
+  const lastVoiceMessageRef = useRef({ role: "", text: "" });
 
-	const pipecatClient = usePipecatClient()
-	const transportState = usePipecatClientTransportState()
+  const pipecatClient = usePipecatClient();
+  const transportState = usePipecatClientTransportState();
 
-	const normalizedTransportState = String(transportState || '').toLowerCase()
+  const normalizedTransportState = String(transportState || "").toLowerCase();
 
-	const isVoiceConnected = CONNECTED_VOICE_STATES.includes(
-		normalizedTransportState
-	)
+  const isVoiceConnected = CONNECTED_VOICE_STATES.includes(
+    normalizedTransportState,
+  );
 
-	const isVoiceConnecting = CONNECTING_VOICE_STATES.includes(
-		normalizedTransportState
-	)
+  const isVoiceConnecting = CONNECTING_VOICE_STATES.includes(
+    normalizedTransportState,
+  );
 
-	const isVoiceActive = isUserSpeaking || isBotSpeaking
+  const canShowVoiceActivity = isVoiceConnected || isVoiceConnecting;
 
-	const addVoiceMessageSafely = useCallback(
-		(role, rawText) => {
-			const text = String(rawText || '').trim()
+  const displayedIsUserSpeaking = canShowVoiceActivity && isUserSpeaking;
+  const displayedIsBotSpeaking = canShowVoiceActivity && isBotSpeaking;
 
-			if (!text) return
+  const isVoiceActive = displayedIsUserSpeaking || displayedIsBotSpeaking;
 
-			const lastMessage = lastVoiceMessageRef.current
+  const addVoiceMessageSafely = useCallback(
+    (role, rawText) => {
+      const text = String(rawText || "").trim();
 
-			if (lastMessage.role === role && lastMessage.text === text) return
+      if (!text) return;
 
-			lastVoiceMessageRef.current = { role, text }
+      const lastMessage = lastVoiceMessageRef.current;
 
-			onAddVoiceMessage({
-				id: createMessageId(),
-				role,
-				text,
-				source: 'voice',
-			})
-		},
-		[onAddVoiceMessage]
-	)
+      if (lastMessage.role === role && lastMessage.text === text) return;
 
-	useRTVIClientEvent(
-		RTVIEvent.UserTranscript,
-		useCallback(
-			(transcript) => {
-				if (transcript?.final === false) return
+      lastVoiceMessageRef.current = { role, text };
 
-				addVoiceMessageSafely('user', getEventText(transcript))
-			},
-			[addVoiceMessageSafely]
-		)
-	)
+      onAddVoiceMessage({
+        id: createMessageId(),
+        role,
+        text,
+        source: "voice",
+      });
+    },
+    [onAddVoiceMessage],
+  );
 
-	useRTVIClientEvent(
-		RTVIEvent.UserLlmText,
-		useCallback(
-			(data) => {
-				addVoiceMessageSafely('user', getEventText(data))
-			},
-			[addVoiceMessageSafely]
-		)
-	)
+  useRTVIClientEvent(
+    RTVIEvent.UserTranscript,
+    useCallback(
+      (transcript) => {
+        if (transcript?.final === false) return;
 
-	useRTVIClientEvent(
-		RTVIEvent.BotOutput,
-		useCallback(
-			(output) => {
-				const spokenStatus = output?.spoken_status
-				const isCompletedOutput = !spokenStatus || spokenStatus === 'completed'
+        addVoiceMessageSafely("user", getEventText(transcript));
+      },
+      [addVoiceMessageSafely],
+    ),
+  );
 
-				if (!isCompletedOutput) return
+  useRTVIClientEvent(
+    RTVIEvent.UserLlmText,
+    useCallback(
+      (data) => {
+        addVoiceMessageSafely("user", getEventText(data));
+      },
+      [addVoiceMessageSafely],
+    ),
+  );
 
-				addVoiceMessageSafely('bot', getEventText(output))
-			},
-			[addVoiceMessageSafely]
-		)
-	)
+  useRTVIClientEvent(
+    RTVIEvent.BotOutput,
+    useCallback(
+      (output) => {
+        const spokenStatus = output?.spoken_status;
+        const isCompletedOutput = !spokenStatus || spokenStatus === "completed";
 
-	useRTVIClientEvent(
-		RTVIEvent.BotTranscript,
-		useCallback(
-			(transcript) => {
-				addVoiceMessageSafely('bot', getEventText(transcript))
-			},
-			[addVoiceMessageSafely]
-		)
-	)
+        if (!isCompletedOutput) return;
 
-	useRTVIClientEvent(
-		RTVIEvent.UserStartedSpeaking,
-		useCallback(() => {
-			setIsUserSpeaking(true)
-		}, [])
-	)
+        addVoiceMessageSafely("bot", getEventText(output));
+      },
+      [addVoiceMessageSafely],
+    ),
+  );
 
-	useRTVIClientEvent(
-		RTVIEvent.UserStoppedSpeaking,
-		useCallback(() => {
-			setIsUserSpeaking(false)
-		}, [])
-	)
+  useRTVIClientEvent(
+    RTVIEvent.BotTranscript,
+    useCallback(
+      (transcript) => {
+        addVoiceMessageSafely("bot", getEventText(transcript));
+      },
+      [addVoiceMessageSafely],
+    ),
+  );
 
-	useRTVIClientEvent(
-		RTVIEvent.BotStartedSpeaking,
-		useCallback(() => {
-			setIsBotSpeaking(true)
-		}, [])
-	)
+  useRTVIClientEvent(
+    RTVIEvent.UserStartedSpeaking,
+    useCallback(() => {
+      setIsUserSpeaking(true);
+    }, []),
+  );
 
-	useRTVIClientEvent(
-		RTVIEvent.BotStoppedSpeaking,
-		useCallback(() => {
-			setIsBotSpeaking(false)
-		}, [])
-	)
+  useRTVIClientEvent(
+    RTVIEvent.UserStoppedSpeaking,
+    useCallback(() => {
+      setIsUserSpeaking(false);
+    }, []),
+  );
 
-	useEffect(() => {
-		if (!isVoiceConnected && !isVoiceConnecting) {
-			setIsUserSpeaking(false)
-			setIsBotSpeaking(false)
-		}
-	}, [isVoiceConnected, isVoiceConnecting])
+  useRTVIClientEvent(
+    RTVIEvent.BotStartedSpeaking,
+    useCallback(() => {
+      setIsBotSpeaking(true);
+    }, []),
+  );
 
-	const handleVoiceClick = async () => {
-		if (!pipecatClient) return
+  useRTVIClientEvent(
+    RTVIEvent.BotStoppedSpeaking,
+    useCallback(() => {
+      setIsBotSpeaking(false);
+    }, []),
+  );
 
-		setVoiceError(null)
+  const handleVoiceClick = async () => {
+    if (!pipecatClient) return;
 
-		try {
-			if (isVoiceConnected || isVoiceConnecting) {
-				await pipecatClient.disconnect()
-				return
-			}
+    setVoiceError(null);
 
-			await pipecatClient.startBotAndConnect({
-				endpoint: VOICE_API_URL,
-			})
-		} catch (error) {
-			console.error('Voice connection error:', error)
-			setVoiceError('Voice connection failed. Please check the voice server.')
-		}
-	}
+    try {
+      if (isVoiceConnected || isVoiceConnecting) {
+        await pipecatClient.disconnect();
+        return;
+      }
 
-	return {
-		voiceError,
-		isVoiceConnected,
-		isVoiceConnecting,
-		isUserSpeaking,
-		isBotSpeaking,
-		isVoiceActive,
-		handleVoiceClick,
-	}
-}
+      await pipecatClient.startBotAndConnect({
+        endpoint: VOICE_API_URL,
+      });
+    } catch (error) {
+      console.error("Voice connection error:", error);
+      setVoiceError("Voice connection failed. Please check the voice server.");
+    }
+  };
 
+  return {
+    voiceError,
+    isVoiceConnected,
+    isVoiceConnecting,
+    isUserSpeaking: displayedIsUserSpeaking,
+    isBotSpeaking: displayedIsBotSpeaking,
+    isVoiceActive,
+    handleVoiceClick,
+  };
+};

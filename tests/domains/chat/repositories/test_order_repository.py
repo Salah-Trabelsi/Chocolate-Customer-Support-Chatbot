@@ -227,11 +227,7 @@ def test_create_order_in_db_uses_fallback_item_name_and_quantity(test_db_session
     assert result == order_data
 
     db = test_db_session()
-    order_item = (
-        db.query(OrderItem)
-        .filter(OrderItem.order_id == "ORD001")
-        .first()
-    )
+    order_item = db.query(OrderItem).filter(OrderItem.order_id == "ORD001").first()
     db.close()
 
     assert order_item.product_id == "choco-001"
