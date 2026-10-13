@@ -1,4 +1,4 @@
-function Navbar() {
+const Navbar = () => {
 	return (
 		<header className="chatbot-navbar">
 			<div className="brand-block">

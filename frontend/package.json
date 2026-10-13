@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@pipecat-ai/client-js": "^1.12.0",
@@ -18,10 +20,15 @@
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^30.1.2",
     "oxlint": "^1.69.0",
-    "vite": "^8.1.0"
+    "vite": "^8.1.0",
+    "vitest": "^5.0.4"
   }
 }
