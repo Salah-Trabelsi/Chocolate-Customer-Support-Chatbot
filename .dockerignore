@@ -1,0 +1,12 @@
+# Allow only inputs needed by the FastAPI image into the build context.
+**
+!Dockerfile
+!requirements.txt
+!app/
+!app/**
+!FAQ.json
+!inventory.json
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*

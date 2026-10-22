@@ -1,0 +1,167 @@
+name: ChocoWise CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_docker:
+        description: Build the application Docker image
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI: "true"
+
+jobs:
+  pre-commit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install local hook dependencies
+        run: |
+          python -m pip install pre-commit==4.7.0 bandit
+          npm ci --prefix frontend
+      - name: Run all configured hooks
+        run: python -m pre_commit run --all-files --show-diff-on-failure
+
+  frontend-tests:
+    name: Frontend Tests
+    needs: pre-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Test with V8 coverage
+        run: npm test -- --run --coverage
+      - name: Build production frontend
+        run: npm run build
+      - name: Upload frontend coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+          if-no-files-found: error
+          retention-days: 14
+
+  backend-tests:
+    name: Backend Tests
+    needs: pre-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: "sqlite:///:memory:"
+      OPENAI_API_KEY: ci-placeholder-not-a-real-key
+      OPENAI_BASE_URL: http://127.0.0.1:9/v1
+      PYTHON_DOTENV_DISABLED: "1"
+      ANONYMIZED_TELEMETRY: "False"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - run: python -m pip install -r requirements.txt
+      - name: Test with pytest-cov
+        run: >-
+          python -m pytest -q --tb=short --capture=fd
+          --cov=app --cov-report=term-missing
+          --cov-report=xml:coverage/backend/coverage.xml
+          --cov-report=html:coverage/backend/html
+      - name: Upload backend coverage
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: backend-coverage
+          path: coverage/backend/
+          if-no-files-found: error
+          retention-days: 14
+
+  frontend-coverage:
+    name: Frontend Coverage
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: frontend-coverage
+          path: coverage
+      - name: Verify generated reports
+        run: |
+          test -s coverage/index.html
+          test -s coverage/lcov.info
+          test -s coverage/coverage-summary.json
+          echo 'Frontend V8 reports are available in the frontend-coverage artifact (14 days). No minimum coverage is enforced.' >> "$GITHUB_STEP_SUMMARY"
+
+  backend-coverage:
+    name: Backend Coverage
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: backend-coverage
+          path: coverage
+      - name: Verify generated reports
+        run: |
+          test -s coverage/coverage.xml
+          test -s coverage/html/index.html
+          echo 'Backend pytest-cov reports are available in the backend-coverage artifact (14 days). No minimum coverage is enforced.' >> "$GITHUB_STEP_SUMMARY"
+
+  docker-build:
+    name: Docker Build
+    needs: [frontend-coverage, backend-coverage]
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.build_docker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Build FastAPI application image (no push)
+        run: docker build --pull --tag chocowise-backend:ci .
